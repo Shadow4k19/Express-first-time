@@ -14,6 +14,6 @@ app.use(corsConfig);
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', dashboardRoutes);
-app.use('api', slideshow);
+app.use('/api', slideshow);
 
 module.exports = app;
