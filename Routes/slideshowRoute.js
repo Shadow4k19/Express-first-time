@@ -22,10 +22,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+
 router.get('/slideshows', getSlideshows);
 router.get('/slideshows/:id', getSlideshowById);
 router.post('/slideshows', upload.single('url'), PostSlideshow);
-router.put('/slideshows/:id', upload.single('url'), PutSlideshow);
+router.put('/slideshows', upload.single('url'), PutSlideshow);
 router.delete('/slideshows', deleteSlideshow);
 
 module.exports = router;

@@ -2,10 +2,10 @@ const db = require('../config/db');
 
 /*Dashboard Controller*/
 exports.GetDashboard = async (req,res) =>{
-    const username = req.query.username;
+    const username = req.params.username;
 
     if(!username){
-        return JSON.stringify({
+        return res.json({
             status: 400,
             message: "Username Require",
         });
@@ -14,20 +14,20 @@ exports.GetDashboard = async (req,res) =>{
     try{
         const [data] = await db.promise().execute("SELECT * FROM dashboard WHERE username = ?",[username]);
         if(data){
-            return JSON.stringify({
+            res.json({
                 status: 200,
                 data: data,
                 message: "Get data Successfuly",
             });
         }else{
-            return JSON.stringify({
+            res.json({
                 status: 404,
                 message: "Data Not Found",
             })
         }
     }catch(e){
         console.log(e);
-        return JSON.stringify({
+        res.json({
             status: 500,
             message: "Internal Server Error",
         })

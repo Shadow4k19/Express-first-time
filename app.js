@@ -5,15 +5,16 @@ const authRoutes = require('./Routes/authRoute');
 const userRoutes = require('./Routes/userRoute');
 const dashboardRoutes = require('./Routes/dashboardRoute');
 const slideshow = require('./Routes/slideshowRoute');
-
+const content = require('./Routes/ContentRoute');
 const app = express();
 
 app.use(bodyParser.json());
 app.use(corsConfig);
 
-app.use('/api', authRoutes);
-app.use('/api', userRoutes);
-app.use('/api', dashboardRoutes);
-app.use('/api', slideshow);
+app.use('/authapi', authRoutes);
+app.use('/userapi', userRoutes);
+app.use('/dashboardapi', dashboardRoutes);
+app.use('/slideshowapi', slideshow);
+app.use('/contentapi', content);
 
 module.exports = app;

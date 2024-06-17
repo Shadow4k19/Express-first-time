@@ -4,30 +4,70 @@ const db = require("../config/db");
 /*User Controller*/
 /*user get*/
 exports.getUser = async (req,res) =>{
-    const username = req.query.username;
-    if(username){
-        const [user] = await db.promise().execute("SELECT * FROM user WHERE username = ?", [username]);
-        const [dashboard] = await db.promise().execute("SELECT * FROM dashboard WHERE username = ?",[username]);
+    try{
+        const [user] = await db.promise().execute("SELECT * FROM user");
+        const [dashboard] = await db.promise().execute("SELECT * FROM dashboard");
 
         if(user && dashboard){
-            return JSON.stringify({
+            return res.json({
                 status: 200,
-                data: {user : user , dashboard : dashboard},
-            })
+                data: {user: user, dashboard : dashboard},
+            });
         }else{
-            return JSON.stringify({
+            return res.json({
                 status: 404,
                 message : "Data not Found",
-            })
+            });
         }
+    }catch(e){
+        console.log(e);
+        return res.json({
+            message : e.message,
+            status: 400,
+        });
     }
+};
+
+exports.GetUserbyUsername = async (req, res) =>{
+    const username = req.params.username;
+    
+    try{
+        if(username){
+            const [user] = await db.promise().execute("SELECT * FROM user WHERE username = ?",[username]);
+            const [dashboard] = await db.promise().execute("SELECT * FROM dashboard WHERE username = ?",[username]);
+
+            if(user && dashboard){
+                res.json({
+                    status: 200,
+                    data: {user: user, dashboard : dashboard},
+                });
+            }else{
+                res.json({
+                    status: 404,
+                    message : "Data not Found",
+                });
+            }
+        }else{
+            res.json({
+                message : "username require",
+                status  : 400,
+            });
+        }
+    }catch(e){
+        console.log(e);
+        res.json({
+            message : e.message,
+            status: 400,
+        });
+    }
+    
 };
 /*user post*/
 exports.Postuser = async (req,res)=>{
     const { username , password, Feburary, March, April } = req.body;
 
     if(!username || !password || !Feburary || !March || !April){
-        return JSON.stringify({
+        return res.json({
             status: 400,
             message: "all detail require",
         });
@@ -35,7 +75,7 @@ exports.Postuser = async (req,res)=>{
     try{
         const [existUser] = await db.promise().execute("SELECT * FROM user WHERE username = ?",[username]);
         if(existUser.length > 0){
-            return JSON.stringify({
+            return res.json({
                 status: 400,
                 message: "Username already exist",
             });
@@ -44,13 +84,13 @@ exports.Postuser = async (req,res)=>{
         const [result1] = await db.promise().execute("INSERT INTO user (usename, password,role) VALUES (?,?,?)",[username,password,role]);
         const [result2] = await db.promise().execute("INSERT INTO dashdboard (Feburary,March,April) VALUES (?,?,?)",[Feburary,March,April])
 
-        return JSON.stringify({
+        res.json({
             status: 201,
             message: "Create complete",
         });
     }catch(e){
         console.log(e);
-        return JSON.stringify({
+        res.json({
             status: 500,
             message: "Internal Server Error",
         });
@@ -61,7 +101,7 @@ exports.Putuser = async (req, res) => {
     const { id, username, password, role, February, March, April } = req.body;
     
     if (!id || !username || !password || !role || !February || !March || !April) {
-        return JSON.stringify({
+        return res.json({
             status: 400,
             message: "Pls fill all data",
         });
@@ -71,7 +111,7 @@ exports.Putuser = async (req, res) => {
         const [exist] = await db.promise().execute("SELECT * FROM user WHERE id = ?", [id]);
 
         if (exist.length === 0) {
-            return JSON.stringify({
+            return res.json({
                 status: 404,
                 message: "User not found",
             });
@@ -79,12 +119,12 @@ exports.Putuser = async (req, res) => {
 
         await db.promise().execute("UPDATE user SET username = ?, password = ?, role = ? WHERE id = ?", [username, password, role, id]);
         await db.promise().execute("UPDATE dashboard SET username = ?, February = ?, March = ?, April = ? WHERE id = ?", [username, February, March, April, id]);
-        return JSON.stringify({
+        res.json({
             status: 200,
             message: "Update Complete",
         });
     } catch (error) {
-        return JSON.stringify({
+        res.json({
             status: 500,
             message: "Internal Server Error",
         });
@@ -95,7 +135,7 @@ exports.Deleteuser = async (req,res) =>{
     const {id} = req.body;
     try{
     if(!id){
-        return JSON.stringify({
+        res.json({
             status: 400,
             message: "Pls fill a ID",
         });
@@ -107,12 +147,12 @@ exports.Deleteuser = async (req,res) =>{
         db.execute("DELETE FROM user WHERE id = ?",[id]);
         db.execute("DELETE FROM dashboard WHERE id = ?",[id]);
 
-        return JSON.stringify({
+        res.json({
             status: 200,
             message: "Delete Complete",
         });
     }else{
-        return JSON.stringify({
+        res.json({
             status: 404,
             message: "404 Not found",
         });
