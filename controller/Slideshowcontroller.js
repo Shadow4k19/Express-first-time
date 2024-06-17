@@ -72,36 +72,48 @@ exports.PostSlideshow = async (req, res) => {
 
 exports.PutSlideshow = async (req, res) => {
     const { id, url } = req.body;
-
     if (!id || !url) {
-      return res.json({ message: "Please fill all details", status: 400 });
+        return res.json({
+            message: "Please fill all details",
+            status: 400,
+        });
     }
-  
+
     try {
-      const imgPath = `IMG_SLIDESHOW/slideshow_${id}.jpg`;
-      const imgData = Buffer.from(url, 'base64');
-  
-      if (imgData.length > 500000) {
-        return res.json({ message: "File is too large.", status: 400 });
-      }
-  
-      const fileType = path.extname(imgPath).toLowerCase();
-      if (fileType !== '.jpg' && fileType !== '.jpeg' && fileType !== '.png') {
-        return res.json({ message: "Only JPG, JPEG, PNG files are allowed.", status: 400 });
-      }
-  
-      fs.writeFileSync(imgPath, imgData);
-  
-      const [rows] = await db.promise().execute("UPDATE slideshow SET url = ? WHERE id = ?", [imgPath, id]);
-      
-      if (rows.affectedRows > 0) {
-        return res.json({ message: "Update Complete", status: 200 });
-      } else {
-        return res.json({ message: "Record not found", status: 404 });
-      }
+        const [rows] = await db.promise().execute("SELECT url FROM slideshow WHERE id = ?", [id]);
+        if (rows.length === 0) {
+            return res.json({
+                message: "Record not found",
+                status: 404,
+            });
+        }
+
+        const oldImgPath = rows[0].url;
+        if (oldImgPath && fs.existsSync(oldImgPath)) {
+            fs.unlinkSync(oldImgPath);
+        }
+
+        const base64Data = url.replace(/^data:image\/(jpeg|jpg|png);base64,/, '');
+        const imgBuffer = Buffer.from(base64Data, 'base64');
+
+        const targetDir = 'IMG_SLIDESHOW';
+        const imgPath = `${targetDir}/slideshow_${id}.jpg`;
+
+        fs.writeFileSync(imgPath, imgBuffer);
+
+        const sql = "UPDATE slideshow SET url = ? WHERE id = ?";
+        await db.promise().execute(sql, [imgPath, id]);
+
+        return res.json({
+            message: "Update Complete",
+            status: 200,
+        });
     } catch (e) {
-      console.error(e);
-      res.status(500).json({ message: e.message, status: 500 });
+        console.error(e);
+        res.json({
+            message: e.message,
+            status: 500,
+        });
     }
 };
 
@@ -123,6 +135,7 @@ exports.deleteSlideshow = async (req, res) => {
         }
 
         if (row.url && fs.existsSync(path.join(__dirname, '..', row.url))) {
+            console.log("DO");
             fs.unlinkSync(path.join(__dirname, '..', row.url));
         }
 

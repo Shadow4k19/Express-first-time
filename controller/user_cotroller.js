@@ -81,8 +81,8 @@ exports.Postuser = async (req,res)=>{
             });
         }
         const role = "user";
-        const [result1] = await db.promise().execute("INSERT INTO user (usename, password,role) VALUES (?,?,?)",[username,password,role]);
-        const [result2] = await db.promise().execute("INSERT INTO dashdboard (Feburary,March,April) VALUES (?,?,?)",[Feburary,March,April])
+        const [result1] = await db.promise().execute("INSERT INTO user (username, password,role) VALUES (?,?,?)",[username,password,role]);
+        const [result2] = await db.promise().execute("INSERT INTO dashboard (username,Feburary,March,April) VALUES (?,?,?,?)",[username,Feburary,March,April])
 
         res.json({
             status: 201,

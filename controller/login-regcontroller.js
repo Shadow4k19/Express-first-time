@@ -13,14 +13,14 @@ exports.register = async (req, res) => {
     try{
         const [existUser] =  await db.promise().execute("SELECT * FROM user WHERE username = ?",[username]);
         if(existUser.length > 0){
-            res.json({
+            return res.json({
                 status: 400,
                 message: "Username already exist",
             });
         }
         const role = "user";
-        const [result1] = await db.promise().execute("INSERT INTO user (usename, password,role) VALUES (?,?,?)",[username,password,role]);
-        const [result2] = await db.promise().execute("INSERT INTO dashdboard (Feburary,March,April) VALUES (?,?,?)",[Feburary,March,April])
+        const [result1] = await db.promise().execute("INSERT INTO user (username, password,role) VALUES (?,?,?)",[username,password,role]);
+        const [result2] = await db.promise().execute("INSERT INTO dashboard (Feburary,March,April) VALUES (?,?,?)",[Feburary,March,April])
 
         res.json({
             status: 201,
@@ -40,25 +40,24 @@ exports.register = async (req, res) => {
 /*Login controllers*/
 exports.login = async (req,res)=>{
     const { username, password } = req.body;
-
     if(username && password){
         const query = 'SELECT * FROM user WHERE username = ? AND PASSWORD = ?';
-        db.promise().execute(query, [username,password], (err,result)=>{
+        db.execute(query, [username,password], (err,result)=>{
             if(err){
-                res.json({
+                return res.json({
                     status: 500,
                     message: "Error querying database",
                 });
             }
 
-            if(result.length !== 0){
-                res.json({
+            if(result.length === 0){
+                return res.json({
                     status: 401,
                     message: "Invalid credentials",
                 });
             }
 
-            res.json({
+            return res.json({
                 status: 200,
                 message: 'Login Successfuly',
             });

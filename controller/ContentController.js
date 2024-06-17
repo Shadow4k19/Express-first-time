@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const fs = require('fs');
 
 /* Content Controller */
 /*GET Content*/
@@ -62,7 +63,7 @@ exports.getContentByID = async (req, res) =>{
 /*Post Content*/
 exports.PostContent = async (req, res) =>{
     const { title, content } = req.body;
-    if(!title || !req.file || content){
+    if(!title || !req.file || !content){
         return res.json({
             message : "All data require",
             status : 400,
@@ -90,7 +91,7 @@ exports.PostContent = async (req, res) =>{
 
 /*PUT CONTENT*/
 exports.PutContent = async (req, res) =>{
-    const { id, title, content } = req.body;
+    const { id, title, content, img } = req.body;
         if (!id || !title || !content) {
             return res.json({ 
                 message: "Please fill in all details", 
@@ -99,23 +100,37 @@ exports.PutContent = async (req, res) =>{
         }
 
         let targetFile = null;
-        if (req.file) {
-            targetFile = req.file.path ? req.file : null;
+
+        const [rows] = await db.promise().execute("SELECT * FROM content WHERE id = ?", [id]);
+        if (rows.length === 0) {
+            return res.json({
+                message: "Record not found",
+                status: 404,
+            });
         }
 
+        if (img) {
+            const oldImgPath = rows[0].img;
+            if (oldImgPath && fs.existsSync(oldImgPath)) {
+                fs.unlinkSync(oldImgPath);
+            }
+    
+            const base64Data = img.replace(/^data:image\/(jpeg|jpg|png);base64,/, '');
+            const imgBuffer = Buffer.from(base64Data, 'base64');
+    
+            const targetDir = 'IMG_CONTENT';
+            const imgPath = `${targetDir}/content_${id}.jpg`;
+    
+            fs.writeFileSync(imgPath, imgBuffer);
+    
+            targetFile = imgPath;
+    
+            return res.json({
+                message: "Update Complete",
+                status: 200,
+            });
+        }
         try {
-            const [rows] = await db.promise().execute("SELECT * FROM content WHERE id = ?", [id]);
-            if (rows.length === 0) {
-                return res.json({ 
-                    message : "Record not found",
-                    status : 404,
-                });
-            }
-
-            if (targetFile && rows[0].img && fs.existsSync(rows[0].img)) {
-                fs.unlinkSync(rows[0].img);
-            }
-
             const sql = `UPDATE content SET title = ?, content = ?${targetFile ? ", img = ?" : ""} WHERE id = ?`;
             const params = targetFile ? [title, content, targetFile, id] : [title, content, id];
             await db.promise().execute(sql, params);

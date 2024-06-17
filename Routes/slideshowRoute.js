@@ -1,6 +1,7 @@
 // routes/slideshowRoutes.js
 const express = require('express');
 const multer = require('multer');
+const path = require('path');
 const {
     getSlideshows,
     getSlideshowById,
@@ -16,7 +17,7 @@ const storage = multer.diskStorage({
         cb(null, 'IMG_SLIDESHOW/');
     },
     filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + path.extname(file.originalname));
+        cb(null, file.fieldname + '-'+ Date.now() + path.extname(file.originalname));
     }
 });
 
