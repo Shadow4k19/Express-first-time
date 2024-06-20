@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const fs = require('fs');
+const path = require('path');
 
 /* Content Controller */
 /*GET Content*/
@@ -69,7 +70,7 @@ exports.PostContent = async (req, res) =>{
             status : 400,
         });
     }
-    const targetFile = req.file.path;
+    const targetFile = `/IMG_CONTENT/${req.file.filename}`;
 
     try {
         const sql = "INSERT INTO content (title, img, content) VALUES (?, ?, ?)";
@@ -169,9 +170,8 @@ exports.DeleteContent = async (req, res) =>{
             });
         };
 
-        
-        if (rows.img && fs.existsSync(path.join(__dirname, '..', rows.img))) {
-            fs.unlinkSync(path.join(__dirname, '..', rows.img));
+        if (rows[0].img && fs.existsSync(path.join(__dirname, '..', rows[0].img))) {
+            fs.unlinkSync(path.join(__dirname, '..', rows[0].img));
         }
 
         await db.promise().execute("DELETE FROM content WHERE id = ?",[id]);
