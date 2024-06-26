@@ -63,8 +63,8 @@ exports.getContentByID = async (req, res) =>{
 /*END OF GET CONTENT*/
 /*Post Content*/
 exports.PostContent = async (req, res) =>{
-    const { title, content } = req.body;
-    if(!title || !req.file || !content){
+    const { title, content, content2, content3, content4} = req.body;
+    if(!title || !req.file || !content || !content2 || !content3 || !content4){
         return res.json({
             message : "All data require",
             status : 400,
@@ -73,8 +73,8 @@ exports.PostContent = async (req, res) =>{
     const targetFile = `/IMG_CONTENT/${req.file.filename}`;
 
     try {
-        const sql = "INSERT INTO content (title, img, content) VALUES (?, ?, ?)";
-        const [result] = await db.promise().execute(sql, [title, targetFile, content]);
+        const sql = "INSERT INTO content (title, img, content, content2, content3, content4) VALUES (?, ?, ?, ?, ?, ?)";
+        const [result] = await db.promise().execute(sql, [title, targetFile, content, content2, content3, content4]);
         
         return res.json({ 
             message: "Create successfully",
@@ -92,8 +92,8 @@ exports.PostContent = async (req, res) =>{
 
 /*PUT CONTENT*/
 exports.PutContent = async (req, res) =>{
-    const { id, title, content, img } = req.body;
-        if (!id || !title || !content) {
+    const { id, title, content, img , content2, content3, content4} = req.body;
+        if (!id || !title || !content || !content2 || !content3 || !content4) {
             return res.json({ 
                 message: "Please fill in all details", 
                 status : 400,
@@ -132,8 +132,8 @@ exports.PutContent = async (req, res) =>{
             });
         }
         try {
-            const sql = `UPDATE content SET title = ?, content = ?${targetFile ? ", img = ?" : ""} WHERE id = ?`;
-            const params = targetFile ? [title, content, targetFile, id] : [title, content, id];
+            const sql = `UPDATE content SET title = ?, content = ?, content2 = ?, content3 = ?, content4 = ?${targetFile ? ", img = ?" : ""} WHERE id = ?`;
+            const params = targetFile ? [title, content, content2, content3, content4, targetFile, id] : [title, content, content2, content3, content4, id];
             await db.promise().execute(sql, params);
 
             return res.json({ 
